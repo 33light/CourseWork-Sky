@@ -54,7 +54,8 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'team_summary_with_session' team.id session.id %}" class="btn btn-sm btn-outline-primary">Team Details</a>
+                            <a href="{% url 'team_summary' team.id %}?session_id={{ selected_session_id }}" class="btn btn-outline-primary btn-sm">Team Details</a>
+
                         </td>
                     </tr>
                     {% endfor %}
