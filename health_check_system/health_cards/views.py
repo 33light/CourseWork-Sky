@@ -187,48 +187,198 @@ from .models import HealthCard, Vote
 @login_required
 def department_summary(request, department_id, session_id=None):
     user_profile = request.user.profile
-    
-    # Check if user is authorized to view department summary
+
     if user_profile.role not in ['department_leader', 'senior_manager']:
         messages.error(request, 'You do not have permission to view department summaries.')
         return redirect('dashboard')
-    
+
     department = get_object_or_404(Department, id=department_id)
     teams = Team.objects.filter(department=department)
-    
-    sessions = Session.objects.all().order_by('-date')
-    
+    sessions = Session.objects.order_by('-date')
+
+    # ✅ Get session_id from GET or URL parameter
+    session_id = request.GET.get('session_id') or session_id
+
     if session_id:
-        session = get_object_or_404(Session, id=session_id)
-        sessions_to_display = [session]
+        try:
+            session = Session.objects.get(id=session_id)
+            sessions_to_display = [session]
+        except Session.DoesNotExist:
+            sessions_to_display = []
     else:
         sessions_to_display = sessions
-    
-    # Get votes for each team, card and session
+
     summary_data = {}
+    chart_labels = []
+    chart_data = []
+    trend_map = {
+        "Improve": 2,
+        "Stable": 1,
+        "Decline": 0,
+        "N/A": None
+    }
+
     for session in sessions_to_display:
         summary_data[session] = {}
         for team in teams:
-            summary_data[session][team] = {}
+            total_green = total_red = total_amber = 0
             for card in HealthCard.objects.all():
                 vote_counts = Vote.objects.filter(
                     session=session,
                     team=team,
                     card=card
                 ).values('status').annotate(count=Count('status'))
-                
-                summary_data[session][team][card] = {
-                    'green': next((item['count'] for item in vote_counts if item['status'] == 'green'), 0),
-                    'amber': next((item['count'] for item in vote_counts if item['status'] == 'amber'), 0),
-                    'red': next((item['count'] for item in vote_counts if item['status'] == 'red'), 0),
-                }
-    
+
+                green = next((v['count'] for v in vote_counts if v['status'] == 'green'), 0)
+                amber = next((v['count'] for v in vote_counts if v['status'] == 'amber'), 0)
+                red = next((v['count'] for v in vote_counts if v['status'] == 'red'), 0)
+
+                total_green += green
+                total_amber += amber
+                total_red += red
+
+            if total_green > max(total_amber, total_red):
+                trend = "Improve"
+            elif total_red > max(total_green, total_amber):
+                trend = "Decline"
+            elif total_green == total_amber == total_red == 0:
+                trend = "N/A"
+            else:
+                trend = "Stable"
+
+            summary_data[session][team] = {'trend': trend}
+
+            # ✅ Add to chart data
+            numeric = trend_map.get(trend)
+            if numeric is not None:
+                chart_labels.append(team.name)
+                chart_data.append(numeric)
+
     context = {
         'department': department,
         'teams': teams,
         'sessions': sessions,
         'selected_session_id': session_id,
         'summary_data': summary_data,
+        'chart_labels': chart_labels,
+        'chart_data': chart_data,
     }
-    
+
     return render(request, 'health_cards/department_summary.html', context)
+
+@login_required
+def user_progress(request):
+    user = request.user
+
+    # Allow both engineers and team leaders to access
+    if request.user.profile.role not in ['engineer', 'team_leader']:
+        messages.error(request, "You do not have permission to view this page.")
+        return redirect('dashboard')
+
+    cards = HealthCard.objects.all()
+    sessions = Session.objects.order_by('date')
+    progress_data = {}
+
+    for card in cards:
+        votes = Vote.objects.filter(user=user, card=card).order_by('session__date')
+        progress_data[card] = votes
+
+    context = {
+        'progress_data': progress_data,
+        'sessions': sessions,
+    }
+
+    return render(request, 'health_cards/user_progress.html', context)
+
+
+from accounts.models import Team
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def team_selection(request):
+    if request.method == 'POST':
+        team_id = request.POST.get('team_id')
+        team = get_object_or_404(Team, id=team_id)
+        request.user.profile.team = team
+        request.user.profile.save()
+        messages.success(request, f"Team '{team.name}' selected.")
+        return redirect('session_selection')  # or any appropriate next step
+    
+    teams = Team.objects.all()
+    return render(request, 'health_cards/team_selection.html', {'teams': teams})
+
+
+@login_required
+def team_leader_summary(request):
+    user = request.user
+    if user.profile.role != 'team_leader':
+        messages.error(request, "Only team leaders can access this summary.")
+        return redirect('dashboard')
+
+    team = user.profile.team
+    sessions = Session.objects.all().order_by('-date')
+    selected_session_id = request.GET.get('session')
+    selected_session = None
+    summary_data = []
+
+    if selected_session_id:
+        selected_session = get_object_or_404(Session, id=selected_session_id)
+        for card in HealthCard.objects.all():
+            votes = Vote.objects.filter(team=team, session=selected_session, card=card)
+            green = votes.filter(status='green').count()
+            amber = votes.filter(status='amber').count()
+            red = votes.filter(status='red').count()
+
+            # Determine trend
+            trend = "Amber"
+            if green > max(amber, red):
+                trend = "Improve"
+            elif red > max(green, amber):
+                trend = "Decline"
+
+            summary_data.append({
+                'card': card.name,
+                'green': green,
+                'amber': amber,
+                'red': red,
+                'trend': trend
+            })
+
+    context = {
+        'team': team,
+        'sessions': sessions,
+        'selected_session_id': selected_session_id,
+        'summary_data': summary_data,
+    }
+
+    return render(request, 'health_cards/team_leader_summary.html', context)
+
+from django.contrib.auth.models import User
+from accounts.models import Team
+
+@login_required
+def team_members(request):
+    user_profile = request.user.profile
+
+    # Only show teams in the department if department leader, else all
+    if user_profile.role == 'department_leader':
+        teams = Team.objects.filter(department=user_profile.team.department)
+    else:
+        teams = Team.objects.all()
+
+    selected_team_id = request.GET.get('team_id')
+    selected_team = None
+    members = []
+
+    if selected_team_id:
+        selected_team = get_object_or_404(Team, id=selected_team_id)
+        members = User.objects.filter(profile__team=selected_team).select_related('profile')
+    
+    context = {
+        'teams': teams,
+        'selected_team_id': selected_team_id,
+        'selected_team': selected_team,
+        'members': members,
+    }
+
+    return render(request, 'health_cards/team_members.html', context)
