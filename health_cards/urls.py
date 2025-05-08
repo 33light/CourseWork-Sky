@@ -14,6 +14,8 @@ urlpatterns = [
     path('team-leader/summary/', views.team_leader_summary, name='team_leader_summary'),
     path('team-summary/', views.team_summary, name='team_summary'),
     path('team-members/', views.team_members, name='team_members'),
+    path('health-cards/team-summary/<int:team_id>/', views.team_summary, name='team_summary'),
+
 
 
 ]
