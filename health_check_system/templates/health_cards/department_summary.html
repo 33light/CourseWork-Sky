@@ -1,120 +1,125 @@
 {% extends 'base.html' %}
-{% load custom_filters %}
-
 {% block content %}
 <div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-12 text-center">
-            <h2>Department Health Summary</h2>
-            <p class="lead">Department: {{ department.name }}</p>
-        </div>
+    <div class="text-center mb-4">
+        <h2>Department Health Summary</h2>
+        <p class="lead">Department: {{ department.name }}</p>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="m-0">Session Filter</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <form method="get" class="d-flex">
-                                <select class="form-select me-2" name="session_id" id="session-select">
-                                    <option value="">All Sessions</option>
-                                    {% for session in sessions %}
-                                    <option value="{{ session.id }}" {% if selected_session_id == session.id|stringformat:"i" %}selected{% endif %}>
-                                        {{ session.name }} ({{ session.date }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <button type="submit" class="btn btn-primary">Filter</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h4 class="m-0">Department Health Data</h4>
-                </div>
-                <div class="card-body">
-                    {% if summary_data %}
-                    {% for session, teams_data in summary_data.items %}
-                    <div class="mb-5">
-                        <h5 class="mb-3">Session: {{ session.name }} ({{ session.date }})</h5>
-                        
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Team</th>
-                                        {% for card in session.cards.all %}
-                                        <th class="text-center">{{ card.name }}</th>
-                                        {% endfor %}
-                                        <th class="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for team, cards_data in teams_data.items %}
-                                    <tr>
-                                        <td><strong>{{ team.name }}</strong></td>
-                                        
-                                        {% for card in session.cards.all %}
-                                        {% with counts=cards_data|get:card %}
-                                        <td class="text-center">
-                                            <div class="health-summary justify-content-center">
-                                                {% if counts.green > 0 %}
-                                                <div class="health-indicator green" title="Green: {{ counts.green }}"></div>
-                                                {% endif %}
-                                                
-                                                {% if counts.amber > 0 %}
-                                                <div class="health-indicator amber" title="Amber: {{ counts.amber }}"></div>
-                                                {% endif %}
-                                                
-                                                {% if counts.red > 0 %}
-                                                <div class="health-indicator red" title="Red: {{ counts.red }}"></div>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        {% endwith %}
-                                        {% endfor %}
-                                        
-                                        <td class="text-center">
-                                            <a href="{% url 'team_summary_with_session' team.id session.id %}" class="btn btn-sm btn-outline-primary">Team Details</a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+
+    <form method="get" class="mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <select name="session_id" class="form-select">
+                    <option value="">All Sessions</option>
+                    {% for session in sessions %}
+                    <option value="{{ session.id }}" {% if selected_session_id == session.id|stringformat:"i" %}selected{% endif %}>
+                        {{ session.name }} ({{ session.date }})
+                    </option>
                     {% endfor %}
-                    {% else %}
-                    <div class="alert alert-info">
-                        <p class="mb-0">No health check data available for this department and session selection.</p>
-                    </div>
-                    {% endif %}
-                </div>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    {% for session, teams_data in summary_data.items %}
+    <div class="card shadow mb-5">
+        <div class="card-header bg-success text-white">
+            <h5 class="m-0">Session: {{ session.name }} ({{ session.date }})</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Trend</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team, data in teams_data.items %}
+                    <tr>
+                        <td><strong>{{ team.name }}</strong></td>
+                        <td>
+                            {% if data.trend == "Improve" %}
+                            <span class="text-success fw-bold">Improve</span>
+                            {% elif data.trend == "Decline" %}
+                            <span class="text-danger fw-bold">Decline</span>
+                            {% elif data.trend == "Stable" %}
+                            <span class="text-warning fw-bold">Stable</span>
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'team_summary' team.id %}?session_id={{ selected_session_id }}" class="btn btn-outline-primary btn-sm">Team Details</a>
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Chart Section -->
+            <div class="mt-5">
+                <h5 class="mb-3">Visual Trend Overview</h5>
+                <canvas id="trendChart_{{ session.id }}" height="100"></canvas>
             </div>
         </div>
     </div>
+    {% endfor %}
 </div>
 
-{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Generate Chart Data for Each Session -->
 <script>
-    document.getElementById('session-select').addEventListener('change', function() {
-        if (this.value) {
-            window.location.href = '{% url "department_summary" department.id %}/' + this.value + '/';
-        } else {
-            window.location.href = '{% url "department_summary" department.id %}';
+    {% for session, teams_data in summary_data.items %}
+    const ctx{{ session.id }} = document.getElementById('trendChart_{{ session.id }}').getContext('2d');
+    const trendLabels{{ session.id }} = [{% for team, data in teams_data.items %}"{{ team.name }}",{% endfor %}];
+    const trendData{{ session.id }} = [{% for team, data in teams_data.items %}
+        {% if data.trend == "Improve" %}2
+        {% elif data.trend == "Stable" %}1
+        {% elif data.trend == "Decline" %}0
+        {% else %}-1
+        {% endif %},
+    {% endfor %}];
+
+    new Chart(ctx{{ session.id }}, {
+        type: 'bar',
+        data: {
+            labels: trendLabels{{ session.id }},
+            datasets: [{
+                label: 'Team Trend (0=Decline, 1=Stable, 2=Improve)',
+                data: trendData{{ session.id }},
+                backgroundColor: trendData{{ session.id }}.map(value => {
+                    if (value === 2) return '#4caf50';
+                    if (value === 1) return '#ff9800';
+                    if (value === 0) return '#f44336';
+                    return '#9e9e9e'; // for N/A
+                }),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 2,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            return value === 2 ? 'Improve' : value === 1 ? 'Stable' : value === 0 ? 'Decline' : 'N/A';
+                        }
+                    }
+                }
+            }
         }
     });
+    {% endfor %}
 </script>
 {% endblock %}
-{% endblock %} 
