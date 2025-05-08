@@ -79,6 +79,12 @@ def health_check(request, session_id):
     
     return render(request, 'health_cards/health_check.html', context)
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Team, Session, HealthCard, Vote
+from django.db.models import Count
+
 @login_required
 def team_summary(request, team_id):
     user_profile = request.user.profile
@@ -90,34 +96,36 @@ def team_summary(request, team_id):
     selected_team_id = request.GET.get('team_id')
     selected_session_id = request.GET.get('session_id')
 
+    # Get team list based on role
     if user_profile.role == 'team_leader':
         teams = Team.objects.filter(department=user_profile.team.department)
     else:
         teams = Team.objects.all()
 
+    # Get the team object
     if selected_team_id:
         team = get_object_or_404(Team, id=selected_team_id)
     else:
-        team = user_profile.team
+        team = get_object_or_404(Team, id=team_id)
 
     if user_profile.role == 'department_leader' and team.department != user_profile.team.department:
         messages.error(request, 'You do not have permission to view this team.')
         return redirect('dashboard')
 
-    sessions = Session.objects.all().order_by('-date')
+    sessions = Session.objects.all().order_by('date')
+
+    # Build session_list based on selected session
     if selected_session_id:
-        sessions = Session.objects.order_by('date')
-        selected_session = Session.objects.get(id=selected_session_id)
-        session_list = [s for s in sessions if s.id == selected_session.id or s.date < selected_session.date][-2:]
+        try:
+            selected_session_id = int(selected_session_id)
+            selected_session = Session.objects.get(id=selected_session_id)
+            session_list = [s for s in sessions if s.id == selected_session.id or s.date < selected_session.date][-2:]
+        except (Session.DoesNotExist, ValueError):
+            session_list = list(sessions)
     else:
-        sessions = sessions.order_by('date')
         session_list = list(sessions)
 
-
     summary_data = {}
-
-    ordered_sessions = sessions.order_by('date')
-    # session_list = list(ordered_sessions)
 
     for i, session in enumerate(session_list):
         session_summary = {}
@@ -125,20 +133,18 @@ def team_summary(request, team_id):
             votes = Vote.objects.filter(session=session, team=team, card=card).values('status').annotate(count=Count('status'))
 
             comments = list(
-            Vote.objects.filter(session=session, team=team, card=card)
-            .exclude(comment__isnull=True)
-            .exclude(comment__exact='')
-            .values_list('comment', flat=True)
-        )
-
+                Vote.objects.filter(session=session, team=team, card=card)
+                .exclude(comment__isnull=True)
+                .exclude(comment__exact='')
+                .values_list('comment', flat=True)
+            )
 
             current = {
                 'green': next((v['count'] for v in votes if v['status'] == 'green'), 0),
                 'amber': next((v['count'] for v in votes if v['status'] == 'amber'), 0),
                 'red': next((v['count'] for v in votes if v['status'] == 'red'), 0),
-                'comments': comments,  # ✅ Add this line
+                'comments': comments,
             }
-
 
             previous = None
             if i > 0 and card in summary_data.get(session_list[i - 1], {}):
@@ -158,10 +164,9 @@ def team_summary(request, team_id):
 
         summary_data[session] = session_summary
 
-    # If a specific session was selected, keep only the latest (the filtered one)
-    if selected_session_id:
-        latest_session = session_list[-1]
-        summary_data = {latest_session: summary_data[latest_session]}
+    # If session is filtered, show only the last session from session_list
+    if selected_session_id and session_list:
+        summary_data = {session_list[-1]: summary_data[session_list[-1]]}
 
     context = {
         'team': team,
@@ -173,6 +178,8 @@ def team_summary(request, team_id):
     }
 
     return render(request, 'health_cards/team_summary.html', context)
+    
+    
 from accounts.models import Department  # Make sure this import is added
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -263,6 +270,7 @@ def department_summary(request, department_id, session_id=None):
 
     return render(request, 'health_cards/department_summary.html', context)
 
+
 @login_required
 def user_progress(request):
     user = request.user
@@ -286,7 +294,6 @@ def user_progress(request):
     }
 
     return render(request, 'health_cards/user_progress.html', context)
-
 
 
 
