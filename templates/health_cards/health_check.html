@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2>Health Check Voting</h2>
+            <p class="lead">Session: {{ session.name }} ({{ session.date }})</p>
+            <p>Team: {{ team.name }}</p>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% for card in health_cards %}
+                <div class="card mb-4 shadow health-card">
+                    <div class="card-body p-4">
+                        <h4 class="card-title">{{ card.name }}</h4>
+                        <p class="card-text">{{ card.description }}</p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-3">
+                                <p><strong>Status:</strong></p>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="status_{{ card.id }}" id="green_{{ card.id }}" value="green" {% if user_votes|get:card.id|get:'status' == 'green' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-success" for="green_{{ card.id }}">Green</label>
+                                    
+                                    <input type="radio" class="btn-check" name="status_{{ card.id }}" id="amber_{{ card.id }}" value="amber" {% if user_votes|get:card.id|get:'status' == 'amber' %}checked{% endif %}>
+                                    <label class="btn btn-outline-warning" for="amber_{{ card.id }}">Amber</label>
+                                    
+                                    <input type="radio" class="btn-check" name="status_{{ card.id }}" id="red_{{ card.id }}" value="red" {% if user_votes|get:card.id|get:'status' == 'red' %}checked{% endif %}>
+                                    <label class="btn btn-outline-danger" for="red_{{ card.id }}">Red</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <p><strong>Progress:</strong></p>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="progress_{{ card.id }}" id="better_{{ card.id }}" value="better" {% if user_votes|get:card.id|get:'progress' == 'better' %}checked{% endif %} required>
+                                    <label class="btn btn-outline-primary" for="better_{{ card.id }}">Getting Better</label>
+                                    
+                                    <input type="radio" class="btn-check" name="progress_{{ card.id }}" id="same_{{ card.id }}" value="same" {% if user_votes|get:card.id|get:'progress' == 'same' %}checked{% endif %}>
+                                    <label class="btn btn-outline-secondary" for="same_{{ card.id }}">Same</label>
+                                    
+                                    <input type="radio" class="btn-check" name="progress_{{ card.id }}" id="worse_{{ card.id }}" value="worse" {% if user_votes|get:card.id|get:'progress' == 'worse' %}checked{% endif %}>
+                                    <label class="btn btn-outline-dark" for="worse_{{ card.id }}">Getting Worse</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="comment_{{ card.id }}" class="form-label"><strong>Comment:</strong></label>
+                                <textarea name="comment_{{ card.id }}" id="comment_{{ card.id }}" class="form-control" rows="3">{{ user_votes|get:card.id|get:"comment" }}</textarea>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Save Votes</button>
+                    <a href="{% url 'session_selection' %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

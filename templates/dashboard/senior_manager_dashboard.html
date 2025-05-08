@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #4d90fe 0%, #38b6ff 50%, #5ce1e6 100%);
+        color: white;
+        padding-bottom: 0;
+    }
+    
+    .navbar {
+        background: linear-gradient(135deg, #0066cc, #0099f7) !important;
+    }
+    
+    h2, .lead {
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dashboard-container {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .card {
+        background: linear-gradient(135deg, #d9eaff, #e8f4ff);
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.25rem;
+    }
+    
+    .bg-primary {
+        background: linear-gradient(to right, #0066cc, #0099f7) !important;
+    }
+    
+    .bg-success {
+        background: linear-gradient(to right, #28a745, #5ad178) !important;
+    }
+    
+    .btn {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        transition: all 0.3s;
+        font-weight: 600;
+    }
+    
+    .btn-outline-primary {
+        background: transparent;
+        border: 2px solid #0099f7;
+        color: #0066cc;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-title {
+        color: #0066cc;
+        font-weight: 600;
+    }
+    
+    .card-text {
+        color: #333;
+    }
+    
+    .nav-tabs {
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .nav-tabs .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+        border: none;
+        border-radius: 0;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: white;
+        background-color: transparent;
+        border-bottom: 3px solid white;
+    }
+    
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .table-bordered {
+        border: none;
+    }
+    
+    .table th {
+        background: rgba(0, 123, 255, 0.1);
+        border-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    .table td {
+        border-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    .department-card {
+        transition: all 0.3s;
+    }
+    
+    .department-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    footer.footer {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="dashboard-container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2>Senior Manager Dashboard</h2>
+                <p class="lead">Welcome, {{ user.first_name }} {{ user.last_name }}</p>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="m-0">Department Overview</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for department in departments %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card department-card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ department.name }}</h5>
+                                        <p class="card-text">
+                                            <strong>Teams:</strong> {{ department.teams.count }}
+                                        </p>
+                                        <a href="{% url 'department_summary' department.id %}" class="btn btn-outline-primary">View Department</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if organization_summary %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="m-0">Organization Health Overview</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs mb-4" id="sessionTabs" role="tablist">
+                            {% for session in sessions|slice:":3" %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                        id="session-{{ session.id }}-tab" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#session-{{ session.id }}" 
+                                        type="button" 
+                                        role="tab">
+                                    {{ session.name }} ({{ session.date }})
+                                </button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="tab-content" id="sessionTabContent">
+                            {% for session in sessions|slice:":3" %}
+                            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                                 id="session-{{ session.id }}" 
+                                 role="tabpanel">
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Department</th>
+                                                <th class="text-center">Green</th>
+                                                <th class="text-center">Amber</th>
+                                                <th class="text-center">Red</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for department in departments %}
+                                            <tr>
+                                                <td><strong>{{ department.name }}</strong></td>
+                                                
+                                                {% with dept_data=organization_summary|get:session|get:department %}
+                                                <td class="text-center">
+                                                    {% with green_count=0 %}
+                                                    {% for card, counts in dept_data.items %}
+                                                    {% with green_count=green_count|add:counts.green %}{% endwith %}
+                                                    {% endfor %}
+                                                    {{ green_count }}
+                                                    {% endwith %}
+                                                </td>
+                                                
+                                                <td class="text-center">
+                                                    {% with amber_count=0 %}
+                                                    {% for card, counts in dept_data.items %}
+                                                    {% with amber_count=amber_count|add:counts.amber %}{% endwith %}
+                                                    {% endfor %}
+                                                    {{ amber_count }}
+                                                    {% endwith %}
+                                                </td>
+                                                
+                                                <td class="text-center">
+                                                    {% with red_count=0 %}
+                                                    {% for card, counts in dept_data.items %}
+                                                    {% with red_count=red_count|add:counts.red %}{% endwith %}
+                                                    {% endfor %}
+                                                    {{ red_count }}
+                                                    {% endwith %}
+                                                </td>
+                                                {% endwith %}
+                                                
+                                                <td class="text-center">
+                                                    <a href="{% url 'department_summary_with_session' department.id session.id %}" class="btn btn-sm btn-outline-primary">Details</a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <a href="#" class="btn btn-outline-primary">View Full Report</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

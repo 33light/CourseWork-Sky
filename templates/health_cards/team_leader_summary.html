@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">Team Summary: {{ team.name }}</h2>
+
+    <form method="get" class="mb-4 text-center">
+        <label for="session" class="me-2">Select Session:</label>
+        <select name="session" id="session" class="form-select d-inline w-auto" onchange="this.form.submit()">
+            <option value="">-- Select --</option>
+            {% for session in sessions %}
+                <option value="{{ session.id }}" {% if session.id|stringformat:"s" == selected_session_id %}selected{% endif %}>
+                    {{ session.name }} ({{ session.date }})
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if summary_data %}
+    <!-- Table -->
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <table class="table table-bordered text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Health Check Card</th>
+                        <th>Green</th>
+                        <th>Amber</th>
+                        <th>Red</th>
+                        <th>Progress Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in summary_data %}
+                    <tr>
+                        <td>{{ row.card }}</td>
+                        <td>{{ row.green }}</td>
+                        <td>{{ row.amber }}</td>
+                        <td>{{ row.red }}</td>
+                        <td>{{ row.trend }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <canvas id="teamChart" height="120"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('teamChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for row in summary_data %}"{{ row.card }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [
+                    {
+                        label: 'Green',
+                        backgroundColor: '#28a745',
+                        data: [{% for row in summary_data %}{{ row.green }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+                    },
+                    {
+                        label: 'Amber',
+                        backgroundColor: '#ffc107',
+                        data: [{% for row in summary_data %}{{ row.amber }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+                    },
+                    {
+                        label: 'Red',
+                        backgroundColor: '#dc3545',
+                        data: [{% for row in summary_data %}{{ row.red }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stepSize: 1
+                    }
+                }
+            }
+        });
+    </script>
+    {% else %}
+        {% if selected_session_id %}
+        <div class="alert alert-info text-center">No vote data found for the selected session.</div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

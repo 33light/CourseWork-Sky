@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">Team Summary: {{ team.name }}</h2>
+
+    <!-- Unified Filter Form -->
+    <form method="get" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="team_id" class="form-label">Select Team:</label>
+                <select name="team_id" id="team_id" class="form-select">
+                    {% for t in teams %}
+                        <option value="{{ t.id }}" {% if t.id|stringformat:"s" == selected_team_id %}selected{% endif %}>
+                            {{ t.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="session_id" class="form-label">Select Session:</label>
+                <select name="session_id" id="session_id" class="form-select">
+                    <option value="">All Sessions</option>
+                    {% for session in sessions %}
+                        <option value="{{ session.id }}" {% if session.id|stringformat:"s" == selected_session_id %}selected{% endif %}>
+                            {{ session.name }} ({{ session.date }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4 text-end">
+                <button type="submit" class="btn btn-primary mt-4">Apply Filters</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Summary Tables -->
+    {% if summary_data %}
+        {% for session, cards in summary_data.items %}
+            <div class="card mb-5 shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">{{ session.name }} ({{ session.date }})</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered text-center align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Health Check Card</th>
+                                <th>Green</th>
+                                <th>Amber</th>
+                                <th>Red</th>
+                                <th>Trend</th>
+                              </tr>                              
+                        </thead>
+                        <tbody>
+                            {% for card, counts in cards.items %}
+                            <tr>
+                                <td>{{ card.name }}</td>
+                                <td>{{ counts.green }}</td>
+                                <td>{{ counts.amber }}</td>
+                                <td>{{ counts.red }}</td>
+                                <td>
+                                    {% if counts.trend == 'Improving' %}
+                                        <span class="text-success fw-bold">Improving</span>
+                                    {% elif counts.trend == 'Declining' %}
+                                        <span class="text-danger fw-bold">Declining</span>
+                                    {% elif counts.trend == 'Stable' %}
+                                        <span class="text-warning fw-bold">Stable</span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                           
+                            
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- Unified Comment Section per Session -->
+{% with total_comments=0 %}
+<div class="accordion mt-3" id="accordion_{{ session.id }}">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapse_{{ session.id }}"
+                    aria-expanded="false"
+                    aria-controls="collapse_{{ session.id }}">
+                View All Comments for {{ session.name }}
+            </button>
+        </h2>
+        <div id="collapse_{{ session.id }}" class="accordion-collapse collapse">
+            <div class="accordion-body">
+                <ul class="mb-0">
+                    {% for card, counts in cards.items %}
+                        {% for comment in counts.comments %}
+                            {% if comment %}
+                            <li class="text-muted fst-italic"><strong>{{ card.name }}:</strong> “{{ comment }}”</li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            No health check data available for this team/session.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

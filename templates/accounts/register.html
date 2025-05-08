@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #4d90fe 0%, #38b6ff 50%, #5ce1e6 100%);
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Navbar styling */
+    .custom-navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        background-color: transparent;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 20px;
+    }
+    
+    .logo-image {
+        height: 50px;
+        margin-right: 15px;
+    }
+    
+    .navbar-links {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+    
+    .nav-link {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .nav-link:hover {
+        opacity: 0.8;
+    }
+    
+    .sign-in-btn {
+        background-color: #1a3c6c;
+        color: white;
+        padding: 0.7rem 1.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+    
+    .sign-in-btn:hover {
+        background-color: #0d2b5a;
+    }
+    
+    .notification-bell {
+        font-size: 1.5rem;
+        color: white;
+        cursor: pointer;
+    }
+    
+    /* Registration form styling */
+    .register-container {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+    }
+    
+    .register-card {
+        background-color: #71c9ff;
+        border-radius: 20px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 550px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .register-title {
+        color: #1a3c6c;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .form-label {
+        color: #1a3c6c;
+        font-weight: 600;
+    }
+    
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.3s;
+        background-color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-control:focus {
+        border-color: #1a3c6c;
+        box-shadow: 0 0 0 3px rgba(26, 60, 108, 0.25);
+    }
+    
+    .register-btn {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50px;
+        padding: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        color: #1a3c6c;
+    }
+    
+    .register-btn:hover {
+        background-color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .login-link {
+        color: #1a3c6c;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .login-link:hover {
+        color: white;
+    }
+    
+    .form-text {
+        color: #1a3c6c;
+    }
+    
+    @media (max-width: 768px) {
+        .custom-navbar {
+            flex-wrap: wrap;
+        }
+        
+        .navbar-brand {
+            margin-bottom: 1rem;
+        }
+        
+        .navbar-links {
+            width: 100%;
+            justify-content: center;
+            margin-left: 0;
+        }
+        
+        .register-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hide the default navbar from base.html if there is one -->
+<style>
+    .navbar:not(.custom-navbar) {
+        display: none !important;
+    }
+    
+    /* Hide footer */
+    .footer {
+        display: none !important;
+    }
+</style>
+
+<!-- Custom single navbar -->
+<header class="custom-navbar">
+    <a href="{% url 'landing' %}" class="navbar-brand">
+        <img src="/static/images/sky-logo.png" alt="Sky Logo" class="logo-image">
+    </a>
+    
+    <div class="navbar-links">
+        <a href="{% url 'landing' %}" class="nav-link">Home</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="sign-in-btn">Dashboard</a>
+            <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="sign-in-btn">Sign in</a>
+        {% endif %}
+        <div class="notification-bell">
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+</header>
+
+<!-- Registration Form -->
+<div class="register-container">
+    <div class="register-card">
+        <h2 class="register-title">Create Account</h2>
+        
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger mb-4">
+                <strong>Error:</strong> Please fix the errors below.
+            </div>
+            {% endif %}
+            
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label for="id_first_name" class="form-label">First Name</label>
+                    <input type="text" name="first_name" id="id_first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
+                    {% if form.first_name.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.first_name.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_last_name" class="form-label">Last Name</label>
+                    <input type="text" name="last_name" id="id_last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required>
+                    {% if form.last_name.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.last_name.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" id="id_username" class="form-control" value="{{ form.username.value|default:'' }}" required>
+                {% if form.username.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.username.errors }}
+                </div>
+                {% endif %}
+                <div class="form-text mt-1">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_email" class="form-label">Email</label>
+                <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default:'' }}" required>
+                {% if form.email.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.email.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_favorite_place" class="form-label">Your Favorite Place</label>
+                <input type="text" name="favorite_place" id="id_favorite_place" class="form-control" value="{{ form.favorite_place.value|default:'' }}" required>
+                {% if form.favorite_place.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.favorite_place.errors }}
+                </div>
+                {% endif %}
+                <div class="form-text mt-1">Please remember this! It will be used to reset your password if you forget it.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_password1" class="form-label">Password</label>
+                <input type="password" name="password1" id="id_password1" class="form-control" required>
+                {% if form.password1.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.password1.errors }}
+                </div>
+                {% endif %}
+                <div class="form-text mt-1">
+                    <ul class="m-0 ps-3">
+                        <li>Your password can't be too similar to your other personal information.</li>
+                        <li>Your password must contain at least 8 characters.</li>
+                        <li>Your password can't be a commonly used password.</li>
+                        <li>Your password can't be entirely numeric.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="id_password2" class="form-label">Password Confirmation</label>
+                <input type="password" name="password2" id="id_password2" class="form-control" required>
+                {% if form.password2.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.password2.errors }}
+                </div>
+                {% endif %}
+                <div class="form-text mt-1">Enter the same password as before, for verification.</div>
+            </div>
+            
+            <div class="mb-4">
+                <button type="submit" class="btn register-btn w-100">Register</button>
+            </div>
+            
+            <div class="text-center">
+                <p>Already have an account? <a href="{% url 'login' %}" class="login-link">Sign In</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

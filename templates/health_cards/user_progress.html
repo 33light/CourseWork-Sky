@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Your Health Check Progress</h2>
+
+    {% for card, votes in progress_data.items %}
+    <div class="card mb-4 shadow">
+        <div class="card-header">
+            <h4>{{ card.name }}</h4>
+        </div>
+        <div class="card-body">
+
+            {% if votes %}
+            <!-- Table -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Session</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vote in votes %}
+                    <tr>
+                        <td>{{ vote.session.name }} ({{ vote.session.date }})</td>
+                        <td>{{ vote.get_status_display }}</td>
+                        <td>{{ vote.get_progress_display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Chart -->
+            <canvas id="chart_{{ card.id }}" height="100"></canvas>
+
+            {% else %}
+            <p>No votes yet for this card.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        {% for card, votes in progress_data.items %}
+        const ctx{{ card.id }} = document.getElementById('chart_{{ card.id }}').getContext('2d');
+        new Chart(ctx{{ card.id }}, {
+            type: 'line',
+            data: {
+                labels: [{% for vote in votes %}"{{ vote.session.name }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [
+                    {
+                        label: 'Status (Green=3, Amber=2, Red=1)',
+                        data: [{% for vote in votes %}
+                            {% if vote.status == 'green' %}3
+                            {% elif vote.status == 'amber' %}2
+                            {% elif vote.status == 'red' %}1
+                            {% else %}0{% endif %}
+                            {% if not forloop.last %}, {% endif %}
+                        {% endfor %}],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40,167,69,0.1)',
+                        fill: true
+                    },
+                    {
+                        label: 'Progress (Better=3, Same=2, Worse=1)',
+                        data: [{% for vote in votes %}
+                            {% if vote.progress == 'better' %}3
+                            {% elif vote.progress == 'same' %}2
+                            {% elif vote.progress == 'worse' %}1
+                            {% else %}0{% endif %}
+                            {% if not forloop.last %}, {% endif %}
+                        {% endfor %}],
+                        borderColor: '#17a2b8',
+                        backgroundColor: 'rgba(23,162,184,0.1)',
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 4,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                if (value === 1) return 'Red / Worse';
+                                if (value === 2) return 'Amber / Same';
+                                if (value === 3) return 'Green / Better';
+                                return '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endfor %}
+    });
+</script>
+{% endblock %}

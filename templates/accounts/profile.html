@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0099f7, #0099f7 40%, #66d6ff);
+        color: white;
+        padding-bottom: 0; /* Remove bottom padding since footer is hidden */
+    }
+    
+    .navbar {
+        background: linear-gradient(135deg, #0066cc, #0099f7) !important;
+    }
+    
+    .profile-container {
+        max-width: 850px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, rgba(14, 117, 202, 0.2), rgba(128, 208, 255, 0.3));
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    .profile-card {
+        background: linear-gradient(135deg, #c8e1ff, #e0f1ff);
+        border-radius: 15px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+    }
+    
+    .profile-header {
+        background: linear-gradient(to right, #0066cc, #0099f7);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-form {
+        padding: 2rem;
+        background: linear-gradient(135deg, #d9eaff, #e8f4ff);
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #b8d9ff;
+        background: linear-gradient(to bottom, #f0f8ff, #e6f3ff);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0099f7;
+        box-shadow: 0 0 0 0.25rem rgba(0, 153, 247, 0.25);
+        background: linear-gradient(to bottom, #e6f3ff, #d9eaff);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #0a1958;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    }
+    
+    .btn-update {
+        background: linear-gradient(to right, #0066cc, #0099f7);
+        border: none;
+        border-radius: 30px;
+        padding: 0.75rem 2.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-update:hover {
+        background: linear-gradient(to right, #005bb7, #0088e0);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 102, 204, 0.4);
+    }
+    
+    .btn-role {
+        background: linear-gradient(to right, #1a237e, #3949ab);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        box-shadow: 0 3px 6px rgba(26, 35, 126, 0.2);
+    }
+    
+    .btn-role:hover {
+        background: linear-gradient(to right, #3949ab, #5c6bc0);
+        color: white;
+        box-shadow: 0 4px 8px rgba(26, 35, 126, 0.3);
+    }
+    
+    .role-badge {
+        background: linear-gradient(to right, #82b1ff, #b6d4ff);
+        color: #1a237e;
+        border-radius: 20px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    footer.footer {
+        display: none !important; /* Hide the footer */
+    }
+    
+    .mb-4.p-3 {
+        background: linear-gradient(135deg, #b3d9ff, #cce6ff) !important;
+        border-radius: 10px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .row {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .text-danger {
+        color: #e53935 !important;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <h2 class="m-0">Profile Information</h2>
+            </div>
+            
+            <div class="profile-form">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ u_form.username.id_for_label }}" class="form-label">Username</label>
+                            {{ u_form.username|add_class:"form-control" }}
+                            {% if u_form.username.errors %}
+                            <div class="text-danger">
+                                {% for error in u_form.username.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ u_form.email.id_for_label }}" class="form-label">Email</label>
+                            {{ u_form.email|add_class:"form-control" }}
+                            {% if u_form.email.errors %}
+                            <div class="text-danger">
+                                {% for error in u_form.email.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ u_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            {{ u_form.first_name|add_class:"form-control" }}
+                            {% if u_form.first_name.errors %}
+                            <div class="text-danger">
+                                {% for error in u_form.first_name.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ u_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            {{ u_form.last_name|add_class:"form-control" }}
+                            {% if u_form.last_name.errors %}
+                            <div class="text-danger">
+                                {% for error in u_form.last_name.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ p_form.team.id_for_label }}" class="form-label">Team</label>
+                        {{ p_form.team|add_class:"form-select" }}
+                        {% if p_form.team.errors %}
+                        <div class="text-danger">
+                            {% for error in p_form.team.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ p_form.favorite_place.id_for_label }}" class="form-label">Your Favorite Place (for password recovery)</label>
+                        {{ p_form.favorite_place|add_class:"form-control" }}
+                        {% if p_form.favorite_place.errors %}
+                        <div class="text-danger">
+                            {% for error in p_form.favorite_place.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4 p-3 rounded-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label class="form-label mb-0">Current Role</label>
+                                <div class="role-badge mt-2">{{ user.profile.get_role_display }}</div>
+                            </div>
+                            <a href="{% url 'role_selection' %}" class="btn btn-role">Change Role</a>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-update">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
