@@ -1,0 +1,28 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Password reset on 127.0.0.1:8000
+From: Team Pulse <noreply@teampulse.com>
+To: muhammadsajedulislambn@gmail.com
+Date: Tue, 22 Apr 2025 15:34:28 -0000
+Message-ID: 
+ <174533606890.7060.4687475346927393580@1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa>
+
+
+Hello,
+
+You're receiving this email because you requested a password reset for your user account at Team Pulse Health Check System.
+
+Please go to the following page and choose a new password:
+
+http://127.0.0.1:8000/password-reset/confirm/Mw/coo39g-e1aa73233b30d088d1b06d48167e7e24/
+
+
+Your username, in case you've forgotten: bond007
+
+Thanks for using our site!
+
+The Team Pulse team
+
+ 
+-------------------------------------------------------------------------------
