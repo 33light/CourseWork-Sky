@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2>Team Health Summary</h2>
+            <p class="lead">Team: {{ team.name }}</p>
+            <p>Department: {{ team.department.name }}</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="m-0">Session Filter</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form method="get" class="d-flex">
+                                <select class="form-select me-2" name="session_id" id="session-select">
+                                    <option value="">All Sessions</option>
+                                    {% for session in sessions %}
+                                    <option value="{{ session.id }}" {% if selected_session_id == session.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ session.name }} ({{ session.date }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="m-0">Team Health Data</h4>
+                </div>
+                <div class="card-body">
+                    {% if summary_data %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Health Card</th>
+                                    <th class="text-center">Green</th>
+                                    <th class="text-center">Amber</th>
+                                    <th class="text-center">Red</th>
+                                    <th class="text-center">Overall Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session, cards in summary_data.items %}
+                                {% for card, counts in cards.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ card.name }}</strong>
+                                        <small class="d-block text-muted">Session: {{ session.name }} ({{ session.date }})</small>
+                                    </td>
+                                    <td class="text-center">{{ counts.green }}</td>
+                                    <td class="text-center">{{ counts.amber }}</td>
+                                    <td class="text-center">{{ counts.red }}</td>
+                                    <td class="text-center">
+                                        <div class="health-summary justify-content-center">
+                                            {% if counts.green > counts.amber and counts.green > counts.red %}
+                                            <div class="health-indicator green" title="Overall: Green"></div>
+                                            {% elif counts.red > counts.amber and counts.red > counts.green %}
+                                            <div class="health-indicator red" title="Overall: Red"></div>
+                                            {% else %}
+                                            <div class="health-indicator amber" title="Overall: Amber"></div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">No health check data available for this team and session selection.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.getElementById('session-select').addEventListener('change', function() {
+        if (this.value) {
+            window.location.href = '{% url "team_summary" team.id %}/' + this.value + '/';
+        } else {
+            window.location.href = '{% url "team_summary" team.id %}';
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Health Check System
 
 <p align="center">
@@ -164,6 +163,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
-=======
-# CourseWork-Sky
->>>>>>> b2e64f7d49f72add39b158ce0894c45fb07c1516

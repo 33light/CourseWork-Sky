@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Navbar styling */
+    .custom-navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        background-color: #1a3c6c;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 20px;
+    }
+    
+    .logo-container {
+        width: 50px;
+        height: 50px;
+        background-color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .logo-icon {
+        color: #1a3c6c;
+        font-size: 1.5rem;
+    }
+    
+    .brand-text {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        white-space: nowrap;
+    }
+    
+    .navbar-links {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+    
+    .nav-link {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .nav-link:hover {
+        opacity: 0.8;
+    }
+    
+    .dashboard-btn {
+        background-color: white;
+        color: #1a3c6c;
+        padding: 0.7rem 1.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+    
+    .dashboard-btn:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .notification-bell {
+        font-size: 1.5rem;
+        color: white;
+        cursor: pointer;
+    }
+    
+    /* Dashboard styling */
+    .dashboard-container {
+        padding: 2rem;
+    }
+    
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1a3c6c;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dashboard-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .dashboard-card {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        height: 100%;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        background-color: #e6f2ff;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.2rem;
+    }
+    
+    .card-icon i {
+        font-size: 1.8rem;
+        color: #1a3c6c;
+    }
+    
+    .card-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a3c6c;
+        margin-bottom: 0.8rem;
+    }
+    
+    .card-text {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-link {
+        color: #1a3c6c;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .card-link i {
+        margin-left: 8px;
+        transition: transform 0.2s;
+    }
+    
+    .card-link:hover i {
+        transform: translateX(5px);
+    }
+    
+    .activity-section {
+        margin-top: 3rem;
+    }
+    
+    .activity-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1a3c6c;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activity-card {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+    }
+    
+    .activity-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #e6f2ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .activity-icon i {
+        font-size: 1.2rem;
+        color: #1a3c6c;
+    }
+    
+    .activity-content {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .activity-time {
+        color: #adb5bd;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .custom-navbar {
+            flex-wrap: wrap;
+        }
+        
+        .navbar-brand {
+            margin-bottom: 1rem;
+        }
+        
+        .navbar-links {
+            width: 100%;
+            justify-content: center;
+            margin-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hide the default navbar from base.html if there is one -->
+<style>
+    .navbar:not(.custom-navbar) {
+        display: none !important;
+    }
+    
+    /* Hide footer */
+    .footer {
+        display: none !important;
+    }
+</style>
+
+<!-- Custom single navbar -->
+<header class="custom-navbar">
+    <a href="{% url 'landing' %}" class="navbar-brand">
+        <div class="logo-container">
+            <i class="fas fa-heartbeat logo-icon"></i>
+        </div>
+        <span class="brand-text">Team Pulse</span>
+    </a>
+    
+    <div class="navbar-links">
+        <a href="{% url 'landing' %}" class="nav-link">Home</a>
+        <a href="{% url 'dashboard' %}" class="dashboard-btn">Dashboard</a>
+        <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+        <div class="notification-bell">
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+</header>
+
+<!-- Dashboard Content -->
+<div class="container dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h2 class="dashboard-title">Welcome, {{ user.first_name|default:user.username }}</h2>
+        <p class="dashboard-subtitle">Here's your health status overview</p>
+    </div>
+    
+    <!-- Dashboard Cards -->
+    <div class="row g-4">
+        <!-- Health Status Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h3 class="card-title">Health Status</h3>
+                <p class="card-text">View your current health metrics and recent activity.</p>
+                <a href="#" class="card-link">View details <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        
+        <!-- Schedule Checkup Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3 class="card-title">Schedule Checkup</h3>
+                <p class="card-text">Schedule your next health checkup with our team.</p>
+                <a href="#" class="card-link">Schedule now <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        
+        <!-- Health Tips Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="card-title">Health Tips</h3>
+                <p class="card-text">Personalized health tips and recommendations for you.</p>
+                <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity Section -->
+    <div class="activity-section">
+        <h3 class="activity-title">Recent Activity</h3>
+        <div class="activity-card">
+            <div class="activity-item d-flex align-items-center">
+                <div class="activity-icon me-3">
+                    <i class="fas fa-walking"></i>
+                </div>
+                <div>
+                    <div class="activity-content">Completed your daily step goal</div>
+                    <div class="activity-time">2 hours ago</div>
+                </div>
+            </div>
+            
+            <div class="activity-item d-flex align-items-center">
+                <div class="activity-icon me-3">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <div>
+                    <div class="activity-content">Updated health profile information</div>
+                    <div class="activity-time">Yesterday</div>
+                </div>
+            </div>
+            
+            <div class="activity-item d-flex align-items-center">
+                <div class="activity-icon me-3">
+                    <i class="fas fa-capsules"></i>
+                </div>
+                <div>
+                    <div class="activity-content">Medication reminder set</div>
+                    <div class="activity-time">3 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
