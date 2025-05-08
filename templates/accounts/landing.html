@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #4d90fe 0%, #38b6ff 50%, #5ce1e6 100%);
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Navbar styling */
+    .custom-navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        background-color: transparent;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 20px;
+    }
+    
+    .logo-image {
+        height: 50px;
+        margin-right: 15px;
+    }
+    
+    .navbar-links {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+    
+    .nav-link {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .nav-link:hover {
+        opacity: 0.8;
+    }
+    
+    .sign-in-btn {
+        background-color: #1a3c6c;
+        color: white;
+        padding: 0.7rem 1.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+    
+    .sign-in-btn:hover {
+        background-color: #0d2b5a;
+    }
+    
+    .notification-bell {
+        font-size: 1.5rem;
+        color: white;
+        cursor: pointer;
+    }
+    
+    /* Main content styling */
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: calc(100vh - 100px);
+        text-align: center;
+        padding: 0 20px;
+    }
+    
+    .heading-container {
+        max-width: 800px;
+        margin-bottom: 3rem;
+    }
+    
+    .main-heading {
+        color: #1a3c6c;
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+    }
+    
+    .sub-heading {
+        color: #1a3c6c;
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+    }
+    
+    .description {
+        color: #1a3c6c;
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 0 auto 3rem auto;
+        line-height: 1.6;
+    }
+    
+    .start-btn {
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #1a3c6c;
+        font-size: 1.5rem;
+        font-weight: 600;
+        padding: 0.75rem 4rem;
+        border-radius: 50px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    .start-btn:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .main-heading {
+            font-size: 2.5rem;
+        }
+        
+        .sub-heading {
+            font-size: 2rem;
+        }
+        
+        .description {
+            font-size: 1rem;
+        }
+        
+        .custom-navbar {
+            flex-wrap: wrap;
+        }
+        
+        .navbar-brand {
+            margin-bottom: 1rem;
+        }
+        
+        .navbar-links {
+            width: 100%;
+            justify-content: center;
+            margin-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hide the default navbar from base.html if there is one -->
+<style>
+    .navbar:not(.custom-navbar) {
+        display: none !important;
+    }
+    
+    /* Hide footer */
+    .footer {
+        display: none !important;
+    }
+</style>
+
+<!-- Custom single navbar -->
+<header class="custom-navbar">
+    <a href="{% url 'landing' %}" class="navbar-brand">
+        <img src="/static/images/sky-logo.png" alt="Sky Logo" class="logo-image">
+    </a>
+    
+    <div class="navbar-links">
+        <a href="{% url 'landing' %}" class="nav-link">Home</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="sign-in-btn">Dashboard</a>
+            <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="sign-in-btn">Sign in</a>
+        {% endif %}
+        <div class="notification-bell">
+            <i class="fas fa-bell"></i>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="heading-container">
+        <h1 class="main-heading">Welcome to Health Check System</h1>
+        <h2 class="sub-heading">Team Status Monitor</h2>
+    </div>
+    
+    <p class="description">
+        Welcome to our comprehensive health check system designed to ensure a healthy and productive work environment. Our platform helps teams stay connected, monitor well-being, and foster a culture of care and support.
+    </p>
+    
+    {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn start-btn">Start</a>
+    {% else %}
+        <a href="{% url 'register' %}" class="btn start-btn">Start</a>
+    {% endif %}
+</div>
+{% endblock %} 

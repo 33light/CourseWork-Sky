@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0099f7, #0099f7 40%, #66d6ff);
+        color: white;
+        padding-bottom: 0; /* Remove bottom padding since footer is hidden */
+    }
+    
+    .navbar {
+        background: linear-gradient(135deg, #0066cc, #0099f7) !important;
+    }
+    
+    .role-container {
+        max-width: 750px;
+        margin: 0 auto;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #1a237e;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1.5rem;
+        color: #1a237e;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .role-option {
+        background: linear-gradient(to right, #aed4f5, #c2e0ff);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #1a237e;
+        font-size: 1.5rem;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .role-option:hover {
+        background: linear-gradient(to right, #82bbef, #aed4f5);
+        transform: translateY(-2px);
+    }
+    
+    .selection-indicator {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #4CAF50;
+        position: absolute;
+        left: 20px;
+        display: none;
+    }
+    
+    .role-option.selected {
+        background: linear-gradient(to right, #82bbef, #aed4f5);
+        font-weight: bold;
+    }
+    
+    .role-option.selected .selection-indicator {
+        display: block;
+    }
+    
+    footer.footer {
+        display: none !important; /* Hide the footer */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="role-container">
+        <h1 class="title">Who are you</h1>
+        <h2 class="subtitle">What is your Role in the company?</h2>
+        
+        <form method="post" id="role-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            
+            <div class="role-option {% if user.profile.role == 'engineer' %}selected{% endif %}" onclick="selectRole('engineer')">
+                <div class="selection-indicator"></div>
+                Engineer
+                <input type="radio" name="role" id="engineer" value="engineer" {% if user.profile.role == 'engineer' %}checked{% endif %} style="display: none;">
+            </div>
+            
+            <div class="role-option {% if user.profile.role == 'team_leader' %}selected{% endif %}" onclick="selectRole('team_leader')">
+                <div class="selection-indicator"></div>
+                Team Leader
+                <input type="radio" name="role" id="team_leader" value="team_leader" {% if user.profile.role == 'team_leader' %}checked{% endif %} style="display: none;">
+            </div>
+            
+            <div class="role-option {% if user.profile.role == 'department_leader' %}selected{% endif %}" onclick="selectRole('department_leader')">
+                <div class="selection-indicator"></div>
+                Department Leader
+                <input type="radio" name="role" id="department_leader" value="department_leader" {% if user.profile.role == 'department_leader' %}checked{% endif %} style="display: none;">
+            </div>
+            
+            <div class="role-option {% if user.profile.role == 'senior_manager' %}selected{% endif %}" onclick="selectRole('senior_manager')">
+                <div class="selection-indicator"></div>
+                Senior Manager
+                <input type="radio" name="role" id="senior_manager" value="senior_manager" {% if user.profile.role == 'senior_manager' %}checked{% endif %} style="display: none;">
+            </div>
+            
+            {% if form.role.errors %}
+            <div class="alert alert-danger mt-3">
+                {{ form.role.errors }}
+            </div>
+            {% endif %}
+            
+            <button type="submit" style="display: none;" id="submit-button">Continue</button>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function selectRole(role) {
+        // Remove selected class from all options
+        document.querySelectorAll('.role-option').forEach(function(element) {
+            element.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked option
+        document.getElementById(role).closest('.role-option').classList.add('selected');
+        
+        // Set the radio button as checked
+        document.getElementById(role).checked = true;
+        
+        // Submit the form
+        setTimeout(function() {
+            document.getElementById('submit-button').click();
+        }, 300);
+    }
+    
+    // Initialize selected state based on checked radio
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkedRadio = document.querySelector('input[name="role"]:checked');
+        if (checkedRadio) {
+            checkedRadio.closest('.role-option').classList.add('selected');
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

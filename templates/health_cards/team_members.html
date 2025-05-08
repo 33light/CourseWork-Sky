@@ -1,0 +1,47 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Team Members Directory</h2>
+
+    <!-- Filter -->
+    <form method="get" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label for="team_id" class="form-label">Select Team:</label>
+                <select name="team_id" id="team_id" class="form-select">
+                    <option value="">-- Select a Team --</option>
+                    {% for team in teams %}
+                        <option value="{{ team.id }}" {% if team.id|stringformat:"s" == selected_team_id %}selected{% endif %}>{{ team.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary mt-4">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    {% if selected_team %}
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="m-0">Team: {{ selected_team.name }}</h5>
+            </div>
+            <div class="card-body">
+                {% if members %}
+                    <ul class="list-group">
+                        {% for member in members %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ member.first_name }} {{ member.last_name }} ({{ member.username }})
+                            <span class="badge bg-secondary">{{ member.profile.role|capfirst }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No members found for this team.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

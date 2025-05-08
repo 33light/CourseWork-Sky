@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow p-4" style="border-radius: 15px;">
+        <h2 class="mb-4 text-center text-primary">Select Your Team</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="team" class="form-label fw-bold">Choose a Team:</label>
+                <select name="team_id" id="team" class="form-select" required>
+                    <option value="">-- Select Team --</option>
+                    {% for team in teams %}
+                        <option value="{{ team.id }}">{{ team.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary px-5">Confirm Team</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
